@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 const mongoURL = process.env.MONGODB_URL!;
 
 if (!mongoURL) {
+    console.error("Missing database URL")
     throw new Error("Mongodb connection URL not provided ")
 }
 
@@ -39,6 +40,7 @@ async function dbConnect() {
 
     } catch (error) {
         cached.promise = null
+        console.error("Mongoose connection error")
         throw error;
 
     }
