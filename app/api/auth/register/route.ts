@@ -1,15 +1,32 @@
 import { NextResponse, NextRequest } from "next/server";
 import { dbConnect } from "@/lib/db";
 import User from "@/models/user";
+import { z } from "zod"
+const userSchema = z.object(
+    {
+        email: z.string().email(),
+        password: z.string().min(6, "password must be atleast 6 character long")
+
+    }
+);
+
 
 export async function POST(request: NextRequest) {
     try {
-        const { email, password } = await request.json()
-        if (!email || !password) {
+        const body = await request.json();
+
+        const validationResult = userSchema.safeParse(body)
+
+
+        if (!validationResult.success) {
             return NextResponse.json({
-                msg: "Username or password is missing"
-            })
+                message: "Invalid data ",
+                errors: validationResult.error.format()
+            }, { status: 400 })
+
         }
+        const { email, password } = body;
+
         await dbConnect()
         const user = await User.findOne({
             email: email
@@ -17,7 +34,7 @@ export async function POST(request: NextRequest) {
         if (user) {
             return NextResponse.json({
                 msg: "User already exists"
-            })
+            }, { status: 409 })
         } else {
             const newUser = new User({
                 email: email,
@@ -25,15 +42,17 @@ export async function POST(request: NextRequest) {
             })
             await newUser.save()
             return NextResponse.json({
-                msg: "User created successfully"
-            })
+                message: "User created successfully"
+            }, { status: 201 })
         }
 
     } catch (error) {
+        console.error("Error while user registration", error)
 
         return NextResponse.json({
-            msg: "Error occured", error
-        })
+            message: "Error occured while registering user",
+            error: error instanceof Error ? error.message : "Unknown Error occured"
+        }, { status: 500 })
     }
 
 }
