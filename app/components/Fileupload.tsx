@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { IKUpload } from "imagekitio-next";
 import { IKUploadResponse } from "imagekitio-next/dist/types/components/IKUpload/props";
+import { Loader } from "lucide-react";
 
 interface FileUploadTypes {
   onSuccess: (res: IKUploadResponse) => void;
@@ -14,9 +15,8 @@ export default function FileUpload({
   onProgress,
   fileType = "image",
 }: FileUploadTypes) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isUploading, setIsUploading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [error, setError] = useState<string | null>(null);
 
   const onError = (err: { message: string }) => {
@@ -78,6 +78,12 @@ export default function FileUpload({
         onUploadProgress={handleProgress}
         onUploadStart={handleStartUpload}
       />
+      {isUploading && (
+        <div className="flex justify-center items-center p-28 text-xl">
+          <Loader className="animate-spin" />
+        </div>
+      )}
+      {error && <div className=" text-sm text-red ">{error}</div>}
     </div>
   );
 }
